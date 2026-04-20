@@ -1,54 +1,22 @@
 module Lexer where
-import Data.Char (isSpace, isNumber, isAlphaNum)
-import Data.Maybe (catMaybes)
-import Data.List.NonEmpty (nonEmpty, NonEmpty(..))
-import Text.Read (readMaybe)
+import Data.Text hiding (empty)
+import Data.Void (Void)
 
-data Token
-    = Indent Int
-    | Number Int
-    | Identifier String
-    | LBrace | RBrace
-    | LBracket | RBracket
-    | LParen | RParen
-    | Comma | SemiColon
-    | Operator String
-    deriving (Eq, Show, Ord)
+import Text.Megaparsec
+import Text.Megaparsec.Char
+import Text.Megaparsec.Char.Lexer qualified as L
 
-lex :: String -> [Token]
-lex input =  catMaybes $ getTokens (nonEmpty input)
-    where 
-        getTokens Nothing = []
-        getTokens (Just s) = 
-            let (token, rest) = classify s
-            in token : getTokens (nonEmpty rest)
+import Token (LexToken(..), WithPos(..))
+import Token qualified
 
-classify :: NonEmpty Char -> (Maybe Token, String)
-classify (c:|r)
-    | c == '\n' = 
-        let (ws, r') = span isSpace r
-        in (Just (Indent (length ws)), r')
-    | c == '(' = (Just LParen, r)
-    | c == ')' = (Just RParen, r)
-    | c == '[' = (Just LBracket, r)
-    | c == ']' = (Just RBracket, r)
-    | c == '{' = (Just LBrace, r)
-    | c == '}' = (Just RBrace, r)
-    | c == ',' = (Just Comma, r)
-    | c == ';' = (Just SemiColon, r)
-    | isSpace c = (Nothing, r)
-    | isNumber c = 
-        let (num, r') = span isNumber r
-        in (Number <$> readMaybe (c:num), r')
-    | isOperator c =
-        let (op, r') = span isOperator r
-        in (Just (Operator (c:op)), r')
-    | otherwise = 
-        let (ident, r') = span isAlphaNum r
-        in (Just (Identifier (c:ident)), r')
+type Parser = Parsec Void Text
 
-isComplete :: [Token] -> Bool
-isComplete tokens = last tokens == Indent 0
+sc :: Parser ()
+sc = L.space space1 empty empty
+lexeme :: Parser a -> Parser a
+lexeme = L.lexeme sc
+symbol :: Text -> Parser Text
+symbol = L.symbol sc
 
-isOperator :: Char -> Bool
-isOperator c = c `elem` ("~!@#$%^&*-=+|/:<>.?" :: String)
+parseToken :: Parser (WithPos LexToken)
+parseToken = Token.withPos (symbol "let" >> pure Let)

@@ -56,7 +56,9 @@ common warnings
     default-extensions:
         ImportQualifiedPost,
         LambdaCase,
-        OverloadedStrings
+        OverloadedStrings,
+        RecordWildCards,
+        TupleSections
     build-depends:
         bytestring,
         containers,
@@ -69,25 +71,21 @@ library
 
     -- Modules exported by the library.
     exposed-modules:
-        Repl,
-        Run,
-        Lexer,
-        Parser,
         Eval,
-        Surface,
-        Typed,
-        X64.Assembler,
-        X64.Assembly,
-        X64.Linker
+        Lexer,
+        Token
+    other-modules:
+        RelCBPV
 
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:
 
     -- Other library packages from which modules are imported.
     build-depends:    
-        base ^>=4.20.0.0,
+        base,
         megaparsec,
-        parser-combinators
+        parser-combinators,
+        transformers
 
     -- Directories containing source files.
     hs-source-dirs:   src
@@ -110,7 +108,7 @@ executable ocelot
 
     -- Other library packages from which modules are imported.
     build-depends:
-        base ^>=4.20.0.0,
+        base,
         ocelot
 
     -- Directories containing source files.
@@ -143,6 +141,7 @@ test-suite ocelot-test
 
     -- Test dependencies.
     build-depends:
-        base ^>=4.20.0.0,
+        base,
         hspec,
-        ocelot
+        ocelot,
+        transformers

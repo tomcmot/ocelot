@@ -1,10 +1,10 @@
 module Main where
 import System.Environment
-import Repl
-import Run
+import Control.Monad (forM_)
+
 main :: IO ()
 main = do
   args <- getArgs
-  case args of
-    [file] -> run file
-    _ -> repl
+  forM_ args $ \ arg ->
+    putStrLn arg
+  putStrLn "hello"
